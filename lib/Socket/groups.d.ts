@@ -1,6 +1,6 @@
-import { proto } from '../../WAProto';
-import { GroupMetadata, ParticipantAction, SocketConfig, WAMessageKey } from '../Types';
-import { BinaryNode } from '../WABinary';
+import { proto } from "../../WAProto";
+import { GroupMetadata, ParticipantAction, SocketConfig, WAMessageKey } from "../Types";
+import { BinaryNode } from "../WABinary";
 export declare const makeGroupsSocket: (config: SocketConfig) => {
     groupMetadata: (jid: string) => Promise<GroupMetadata>;
     groupCreate: (subject: string, participants: string[]) => Promise<GroupMetadata>;

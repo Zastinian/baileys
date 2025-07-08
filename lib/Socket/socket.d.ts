@@ -1,7 +1,7 @@
-import { Boom } from '@hapi/boom';
-import { SocketConfig } from '../Types';
-import { BinaryNode } from '../WABinary';
-import { WebSocketClient } from './Client';
+import { Boom } from "@hapi/boom";
+import { SocketConfig } from "../Types";
+import { BinaryNode } from "../WABinary";
+import { WebSocketClient } from "./Client";
 /**
  * Connects to WA servers and performs:
  * - simple queries (no retry mechanism, wait for connection establishment)
