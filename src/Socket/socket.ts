@@ -640,8 +640,9 @@ export const makeSocket = (config: SocketConfig) => {
 	})
 
 	ws.on('CB:stream:error', (node: BinaryNode) => {
-		// const { reason, statusCode } = getErrorCodeFromStreamError(node)
-		end(undefined)
+		const { reason, statusCode } = getErrorCodeFromStreamError(node)
+
+		end(new Boom(`Stream Errored (${reason})`, { statusCode, data: node }))
 	})
 	// stream fail, possible logout
 	ws.on('CB:failure', (node: BinaryNode) => {
