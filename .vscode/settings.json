@@ -1,0 +1,10 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit"
+  },
+  "cSpell.words": [
+    "batslap",
+    "bobross",
+    "userinfo"
+  ]
+}
