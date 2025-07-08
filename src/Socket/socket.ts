@@ -16,8 +16,8 @@ import {
 	aesEncryptCTR,
 	bindWaitForConnectionUpdate,
 	bytesToCrockford,
-	configureSuccessfulPairing,
 	Curve,
+	configureSuccessfulPairing,
 	derivePairingCodeKey,
 	generateLoginNode,
 	generateMdTagPrefix,
@@ -640,8 +640,6 @@ export const makeSocket = (config: SocketConfig) => {
 	})
 
 	ws.on('CB:stream:error', (node: BinaryNode) => {
-		logger.error({ node }, 'stream errored out')
-
 		const { reason, statusCode } = getErrorCodeFromStreamError(node)
 
 		end(new Boom(`Stream Errored (${reason})`, { statusCode, data: node }))
