@@ -1,8 +1,8 @@
-import { Boom } from '@hapi/boom';
-import { BotListInfo, ChatModification, MessageUpsertType, SocketConfig, WABusinessProfile, WAMediaUpload, WAMessage, WAPatchCreate, WAPresence, WAPrivacyCallValue, WAPrivacyGroupAddValue, WAPrivacyMessagesValue, WAPrivacyOnlineValue, WAPrivacyValue, WAReadReceiptsValue } from '../Types';
-import { LabelActionBody } from '../Types/Label';
-import { BinaryNode } from '../WABinary';
-import { USyncQuery } from '../WAUSync';
+import { Boom } from "@hapi/boom";
+import { type BotListInfo, type ChatModification, type MessageUpsertType, type SocketConfig, type WABusinessProfile, type WAMediaUpload, type WAMessage, type WAPatchCreate, type WAPresence, type WAPrivacyCallValue, type WAPrivacyGroupAddValue, type WAPrivacyMessagesValue, type WAPrivacyOnlineValue, type WAPrivacyValue, type WAReadReceiptsValue } from "../Types";
+import type { LabelActionBody } from "../Types/Label";
+import { type BinaryNode } from "../WABinary";
+import { USyncQuery } from "../WAUSync";
 export declare const makeChatsSocket: (config: SocketConfig) => {
     getBotListV2: () => Promise<BotListInfo[]>;
     processingMutex: {
