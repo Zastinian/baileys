@@ -4,34 +4,7 @@ import { proto } from "../../WAProto";
 import { AuthenticationCreds, AuthenticationState, SignalDataTypeMap } from "../Types";
 import { initAuthCreds } from "./auth-utils";
 import { BufferJSON } from "./generics";
-
-class Mutex {
-  private locked = false;
-  private waitingQueue: Array<() => void> = [];
-
-  async acquire(): Promise<() => void> {
-    return new Promise((resolve) => {
-      if (!this.locked) {
-        this.locked = true;
-        resolve(() => this.release());
-      } else {
-        this.waitingQueue.push(() => {
-          this.locked = true;
-          resolve(() => this.release());
-        });
-      }
-    });
-  }
-
-  private release(): void {
-    if (this.waitingQueue.length > 0) {
-      const next = this.waitingQueue.shift()!;
-      next();
-    } else {
-      this.locked = false;
-    }
-  }
-}
+import Mutex from "./mutex";
 
 // We need to lock files due to the fact that we are using async functions to read and write files
 // https://github.com/WhiskeySockets/Baileys/issues/794

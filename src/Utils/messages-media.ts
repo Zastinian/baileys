@@ -1,7 +1,7 @@
+import * as Crypto from "node:crypto";
 import { Boom } from "@hapi/boom";
 import axios, { type AxiosRequestConfig } from "axios";
 import { exec } from "child_process";
-import * as Crypto from "crypto";
 import { once } from "events";
 import { createReadStream, createWriteStream, promises as fs, type WriteStream } from "fs";
 import { ResizeStrategy } from "jimp";
@@ -676,7 +676,7 @@ export const downloadEncryptedContent = async (
 
   let remainingBytes = Buffer.from([]);
 
-  let aes: Crypto.Decipher;
+  let aes: Crypto.Decipheriv;
 
   const pushBytes = (bytes: Buffer, push: (bytes: Buffer) => void) => {
     if (startByte || endByte) {

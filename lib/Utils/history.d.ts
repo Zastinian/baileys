@@ -1,6 +1,6 @@
-import { AxiosRequestConfig } from 'axios';
-import { proto } from '../../WAProto';
-import { Chat, Contact } from '../Types';
+import { AxiosRequestConfig } from "axios";
+import { proto } from "../../WAProto";
+import { Chat, Contact } from "../Types";
 export declare const downloadHistory: (msg: proto.Message.IHistorySyncNotification, options: AxiosRequestConfig<{}>) => Promise<proto.HistorySync>;
 export declare const processHistoryMessage: (item: proto.IHistorySync) => {
     chats: Chat[];
