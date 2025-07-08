@@ -280,7 +280,7 @@
 
     "jpeg-js": ["jpeg-js@0.4.4", "", {}, "sha512-WZzeDOEtTOBK4Mdsar0IqEU5sMr3vSV2RqkAIzUEV2BHnUfKGyswWFPFwK5EeDo93K3FohSHbLAjj0s1Wzd+dg=="],
 
-    "libsignal": ["libsignal@github:Zastinian/signal#e345285", { "dependencies": { "@noble/curves": "^1.9.2", "protobufjs": "6.8.8" } }, "Zastinian-signal-e345285"],
+    "libsignal": ["libsignal@github:Zastinian/signal#e61c102", { "dependencies": { "@noble/curves": "^1.9.2", "protobufjs": "6.8.8" } }, "Zastinian-signal-e61c102"],
 
     "long": ["long@5.3.2", "", {}, "sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA=="],
 
