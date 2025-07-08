@@ -278,7 +278,7 @@
 
     "jpeg-js": ["jpeg-js@0.4.4", "", {}, "sha512-WZzeDOEtTOBK4Mdsar0IqEU5sMr3vSV2RqkAIzUEV2BHnUfKGyswWFPFwK5EeDo93K3FohSHbLAjj0s1Wzd+dg=="],
 
-    "libsignal": ["libsignal@github:Zastinian/signal#eb1b72b", { "dependencies": { "curve25519-js": "^0.0.4", "protobufjs": "6.8.8" } }, "Zastinian-signal-eb1b72b"],
+    "libsignal": ["libsignal@github:Zastinian/signal#49a9ae9", { "dependencies": { "curve25519-js": "^0.0.4", "protobufjs": "6.8.8" } }, "Zastinian-signal-49a9ae9"],
 
     "long": ["long@5.3.2", "", {}, "sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA=="],
 
