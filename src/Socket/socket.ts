@@ -118,6 +118,10 @@ export const makeSocket = (config: SocketConfig) => {
       throw new Boom("Connection Closed", { statusCode: DisconnectReason.connectionClosed });
     }
 
+    if (ws.isClosed || ws.isClosing) {
+      throw new Boom("Connection Closed", { statusCode: DisconnectReason.connectionClosed });
+    }
+
     const bytes = noise.encodeFrame(data);
     await promiseTimeout<void>(connectTimeoutMs, async (resolve, reject) => {
       try {
@@ -206,6 +210,10 @@ export const makeSocket = (config: SocketConfig) => {
 
   /** send a query, and wait for its response. auto-generates message ID if not provided */
   const query = async (node: BinaryNode, timeoutMs?: number) => {
+    if (closed || !ws.isOpen) {
+      throw new Boom("Connection Closed", { statusCode: DisconnectReason.connectionClosed });
+    }
+
     if (!node.attrs.id) {
       node.attrs.id = generateMessageTag();
     }
