@@ -21,6 +21,7 @@
 		"@cacheable/node-cache": "^1.4.0",
 		"@hapi/boom": "^9.1.3",
 		"axios": "^1.6.0",
+		"jimp": "^1.6.0",
 		"libsignal": "github:WhiskeySockets/libsignal-node",
 		"pino": "^9.6",
 		"protobufjs": "^7.2.4",
@@ -36,14 +37,10 @@
 	},
 	"peerDependencies": {
 		"audio-decode": "^2.1.3",
-		"jimp": "^1.6.0",
 		"sharp": "^0.34.2"
 	},
 	"peerDependenciesMeta": {
 		"audio-decode": {
-			"optional": true
-		},
-		"jimp": {
 			"optional": true
 		},
 		"sharp": {
