@@ -1,4 +1,3 @@
-import NodeCache from '@cacheable/node-cache'
 import { Boom } from '@hapi/boom'
 import { proto } from '../../WAProto'
 import { DEFAULT_CACHE_TTLS, WA_DEFAULT_EPHEMERAL } from '../Defaults'
@@ -30,6 +29,7 @@ import {
 	parseAndInjectE2ESessions,
 	unixTimestampSeconds
 } from '../Utils'
+import NodeCache from "../Utils/cache";
 import { getUrlInfo } from '../Utils/link-preview'
 import {
 	areJidsSameUser,
@@ -39,10 +39,10 @@ import {
 	getBinaryNodeChildren,
 	isJidGroup,
 	isJidUser,
+	JidWithDevice,
 	jidDecode,
 	jidEncode,
 	jidNormalizedUser,
-	JidWithDevice,
 	S_WHATSAPP_NET
 } from '../WABinary'
 import { USyncQuery, USyncUser } from '../WAUSync'

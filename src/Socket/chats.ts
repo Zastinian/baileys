@@ -1,4 +1,3 @@
-import NodeCache from "@cacheable/node-cache";
 import { Boom } from "@hapi/boom";
 import { proto } from "../../WAProto";
 import { DEFAULT_CACHE_TTLS, PROCESSABLE_HISTORY_TYPES } from "../Defaults";
@@ -38,6 +37,7 @@ import {
   newLTHashState,
   processSyncAction,
 } from "../Utils";
+import NodeCache from "../Utils/cache";
 import { makeMutex } from "../Utils/make-mutex";
 import processMessage from "../Utils/process-message";
 import {

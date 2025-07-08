@@ -1,7 +1,9 @@
-import NodeCache from '@cacheable/node-cache'
 import { Boom } from '@hapi/boom'
 import { randomBytes } from 'crypto'
+import NodeCache from "../Utils/cache";
+
 import Long = require('long')
+
 import { proto } from '../../WAProto'
 import { DEFAULT_CACHE_TTLS, KEY_BUNDLE_TYPE, MIN_PREKEY_COUNT } from '../Defaults'
 import {
@@ -18,8 +20,8 @@ import {
 import {
 	aesDecryptCTR,
 	aesEncryptGCM,
-	cleanMessage,
 	Curve,
+	cleanMessage,
 	decodeMediaRetryNode,
 	decodeMessageNode,
 	decryptMessageNode,
