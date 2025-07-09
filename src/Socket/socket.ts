@@ -10,7 +10,7 @@ import {
   MIN_PREKEY_COUNT,
   NOISE_WA_HEADER,
 } from "../Defaults";
-import { DisconnectReason, SocketConfig } from "../Types";
+import { DisconnectReason, type SocketConfig } from "../Types";
 import {
   addTransactionCapability,
   aesEncryptCTR,
@@ -32,7 +32,7 @@ import {
 } from "../Utils";
 import {
   assertNodeErrorFree,
-  BinaryNode,
+  type BinaryNode,
   binaryNodeToString,
   encodeBinaryNode,
   getBinaryNodeChild,
@@ -57,18 +57,11 @@ export const makeSocket = (config: SocketConfig) => {
     keepAliveIntervalMs,
     browser,
     auth: authState,
-    printQRInTerminal,
     defaultQueryTimeoutMs,
     transactionOpts,
     qrTimeout,
     makeSignalRepository,
   } = config;
-
-  if (printQRInTerminal) {
-    console.warn(
-      "⚠️ The printQRInTerminal option has been deprecated. You will no longer receive QR codes in the terminal automatically. Please listen to the connection.update event yourself and handle the QR your way. You can remove this message by removing this opttion. This message will be removed in a future version.",
-    );
-  }
 
   const url = typeof waWebSocketUrl === "string" ? new URL(waWebSocketUrl) : waWebSocketUrl;
 
@@ -384,21 +377,42 @@ export const makeSocket = (config: SocketConfig) => {
     }
 
     if (ws.isClosed || ws.isClosing) {
-      throw new Boom("Connection Closed", { statusCode: DisconnectReason.connectionClosed });
+      throw new Error("WebSocket is closed or closing");
     }
 
-    let onOpen: () => void;
-    let onClose: (err: Error) => void;
-    await new Promise((resolve, reject) => {
-      onOpen = () => resolve(undefined);
-      onClose = mapWebSocketError(reject);
+    const timeout = 30000;
+
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error("WebSocket connection timeout"));
+      }, timeout);
+
+      const cleanup = () => {
+        clearTimeout(timer);
+        ws.off("open", onOpen);
+        ws.off("close", onClose);
+        ws.off("error", onError);
+      };
+
+      const onOpen = () => {
+        cleanup();
+        resolve(undefined);
+      };
+
+      const onClose = () => {
+        cleanup();
+        reject(new Error("WebSocket connection closed"));
+      };
+
+      const onError = (error) => {
+        cleanup();
+        reject(error);
+      };
+
       ws.on("open", onOpen);
       ws.on("close", onClose);
-      ws.on("error", onClose);
-    }).finally(() => {
-      ws.off("open", onOpen);
-      ws.off("close", onClose);
-      ws.off("error", onClose);
+      ws.on("error", onError);
     });
   };
 
@@ -476,66 +490,83 @@ export const makeSocket = (config: SocketConfig) => {
     phoneNumber: string,
     customPairingCode?: string,
   ): Promise<string> => {
+    if (!ws.isOpen) {
+      try {
+        await waitForSocketOpen();
+      } catch {
+        throw new Error("Error with the socket");
+      }
+    }
+
     const pairingCode = customPairingCode ?? bytesToCrockford(randomBytes(5));
 
     if (customPairingCode && customPairingCode?.length !== 8) {
-      throw new Error("Custom pairing code must be exactly 8 chars");
+      throw new Error("Custom pairing code must be exactly 8 characters");
+    }
+
+    if (!ws.isOpen) {
+      throw new Error("WebSocket connection lost");
     }
 
     authState.creds.pairingCode = pairingCode;
-
     authState.creds.me = {
       id: jidEncode(phoneNumber, "s.whatsapp.net"),
       name: "~",
     };
+
     ev.emit("creds.update", authState.creds);
-    await sendNode({
-      tag: "iq",
-      attrs: {
-        to: S_WHATSAPP_NET,
-        type: "set",
-        id: generateMessageTag(),
-        xmlns: "md",
-      },
-      content: [
-        {
-          tag: "link_code_companion_reg",
-          attrs: {
-            jid: authState.creds.me.id,
-            stage: "companion_hello",
-            // eslint-disable-next-line camelcase
-            should_show_push_notification: "true",
-          },
-          content: [
-            {
-              tag: "link_code_pairing_wrapped_companion_ephemeral_pub",
-              attrs: {},
-              content: await generatePairingKey(),
-            },
-            {
-              tag: "companion_server_auth_key_pub",
-              attrs: {},
-              content: authState.creds.noiseKey.public,
-            },
-            {
-              tag: "companion_platform_id",
-              attrs: {},
-              content: getPlatformId(browser[1]),
-            },
-            {
-              tag: "companion_platform_display",
-              attrs: {},
-              content: `${browser[1]} (${browser[0]})`,
-            },
-            {
-              tag: "link_code_pairing_nonce",
-              attrs: {},
-              content: "0",
-            },
-          ],
+
+    try {
+      await sendNode({
+        tag: "iq",
+        attrs: {
+          to: S_WHATSAPP_NET,
+          type: "set",
+          id: generateMessageTag(),
+          xmlns: "md",
         },
-      ],
-    });
+        content: [
+          {
+            tag: "link_code_companion_reg",
+            attrs: {
+              jid: authState.creds.me.id,
+              stage: "companion_hello",
+              should_show_push_notification: "true",
+            },
+            content: [
+              {
+                tag: "link_code_pairing_wrapped_companion_ephemeral_pub",
+                attrs: {},
+                content: await generatePairingKey(),
+              },
+              {
+                tag: "companion_server_auth_key_pub",
+                attrs: {},
+                content: authState.creds.noiseKey.public,
+              },
+              {
+                tag: "companion_platform_id",
+                attrs: {},
+                content: getPlatformId(browser[1]),
+              },
+              {
+                tag: "companion_platform_display",
+                attrs: {},
+                content: `${browser[1]} (${browser[2]})`,
+              },
+              {
+                tag: "link_code_pairing_nonce",
+                attrs: {},
+                content: "0",
+              },
+            ],
+          },
+        ],
+      });
+    } catch (error) {
+      throw new Error(`Error: ${error.message}`);
+    }
+
     return authState.creds.pairingCode;
   };
 
