@@ -42,13 +42,6 @@ import {
 } from "../WABinary";
 import { WebSocketClient } from "./Client";
 
-/**
- * Connects to WA servers and performs:
- * - simple queries (no retry mechanism, wait for connection establishment)
- * - listen to messages and emit events
- * - query phone connection
- */
-
 export const makeSocket = (config: SocketConfig) => {
   const {
     waWebSocketUrl,
@@ -76,7 +69,6 @@ export const makeSocket = (config: SocketConfig) => {
   }
 
   const ws = new WebSocketClient(url, config);
-
   ws.connect();
 
   const ev = makeEventBuffer(logger);
@@ -91,7 +83,6 @@ export const makeSocket = (config: SocketConfig) => {
   });
 
   const { creds } = authState;
-  // add transaction capability
   const keys = addTransactionCapability(authState.keys, logger, transactionOpts);
   const signalRepository = makeSignalRepository({ creds, keys });
 
@@ -108,7 +99,9 @@ export const makeSocket = (config: SocketConfig) => {
   /** send a raw buffer */
   const sendRawMessage = async (data: Uint8Array | Buffer) => {
     if (!ws.isOpen) {
-      throw new Boom("Connection Closed", { statusCode: DisconnectReason.connectionClosed });
+      throw new Boom("Connection Closed", {
+        statusCode: DisconnectReason.connectionClosed,
+      });
     }
 
     const bytes = noise.encodeFrame(data);
@@ -180,19 +173,22 @@ export const makeSocket = (config: SocketConfig) => {
         onRecv = resolve;
         onErr = (err) => {
           reject(
-            err || new Boom("Connection Closed", { statusCode: DisconnectReason.connectionClosed }),
+            err ||
+              new Boom("Connection Closed", {
+                statusCode: DisconnectReason.connectionClosed,
+              }),
           );
         };
 
         ws.on(`TAG:${msgId}`, onRecv);
-        ws.on("close", onErr); // if the socket closes, you'll never receive the message
+        ws.on("close", onErr);
         ws.off("error", onErr);
       });
 
       return result as any;
     } finally {
       ws.off(`TAG:${msgId}`, onRecv!);
-      ws.off("close", onErr!); // if the socket closes, you'll never receive the message
+      ws.off("close", onErr!);
       ws.off("error", onErr!);
     }
   };
@@ -292,13 +288,11 @@ export const makeSocket = (config: SocketConfig) => {
 
   const onMessageReceived = (data: Buffer) => {
     noise.decodeFrame(data, (frame) => {
-      // reset ping timeout
       lastDateRecv = new Date();
 
       let anyTriggered = false;
 
       anyTriggered = ws.emit("frame", frame);
-      // if it's a binary node
       if (!(frame instanceof Uint8Array)) {
         const msgId = frame.attrs.id;
 
@@ -306,9 +300,7 @@ export const makeSocket = (config: SocketConfig) => {
           logger.trace({ xml: binaryNodeToString(frame), msg: "recv xml" });
         }
 
-        /* Check if this is a response to a message we sent */
         anyTriggered = ws.emit(`${DEF_TAG_PREFIX}${msgId}`, frame) || anyTriggered;
-        /* Check if this is a response to a message we are expecting */
         const l0 = frame.tag;
         const l1 = frame.attrs || {};
         const l2 = Array.isArray(frame.content) ? frame.content[0]?.tag : "";
@@ -369,7 +361,9 @@ export const makeSocket = (config: SocketConfig) => {
     }
 
     if (ws.isClosed || ws.isClosing) {
-      throw new Boom("Connection Closed", { statusCode: DisconnectReason.connectionClosed });
+      throw new Boom("Connection Closed", {
+        statusCode: DisconnectReason.connectionClosed,
+      });
     }
 
     let onOpen: () => void;
@@ -394,14 +388,13 @@ export const makeSocket = (config: SocketConfig) => {
       }
 
       const diff = Date.now() - lastDateRecv.getTime();
-      /*
-				check if it's been a suspicious amount of time since the server responded with our last seen
-				it could be that the network is down
-			*/
       if (diff > keepAliveIntervalMs + 5000) {
-        end(new Boom("Connection was lost", { statusCode: DisconnectReason.connectionLost }));
+        end(
+          new Boom("Connection was lost", {
+            statusCode: DisconnectReason.connectionLost,
+          }),
+        );
       } else if (ws.isOpen) {
-        // if its all good, send a keep alive request
         query({
           tag: "iq",
           attrs: {
@@ -418,7 +411,7 @@ export const makeSocket = (config: SocketConfig) => {
         logger.warn("keep alive called when WS not open");
       }
     }, keepAliveIntervalMs));
-  /** i have no idea why this exists. pls enlighten me */
+
   const sendPassiveIq = (tag: "passive" | "active") =>
     query({
       tag: "iq",
@@ -430,7 +423,6 @@ export const makeSocket = (config: SocketConfig) => {
       content: [{ tag, attrs: {} }],
     });
 
-  /** logout & invalidate connection */
   const logout = async (msg?: string) => {
     const jid = authState.creds.me?.id;
     if (jid) {
@@ -454,7 +446,11 @@ export const makeSocket = (config: SocketConfig) => {
       });
     }
 
-    end(new Boom(msg || "Intentional Logout", { statusCode: DisconnectReason.loggedOut }));
+    end(
+      new Boom(msg || "Intentional Logout", {
+        statusCode: DisconnectReason.loggedOut,
+      }),
+    );
   };
 
   const requestPairingCode = async (
@@ -561,9 +557,12 @@ export const makeSocket = (config: SocketConfig) => {
   });
   ws.on("error", mapWebSocketError(end));
   ws.on("close", () =>
-    end(new Boom("Connection Terminated", { statusCode: DisconnectReason.connectionClosed })),
+    end(
+      new Boom("Connection Terminated", {
+        statusCode: DisconnectReason.connectionClosed,
+      }),
+    ),
   );
-  // the server terminated the connection
   ws.on("CB:xmlstreamend", () =>
     end(
       new Boom("Connection Terminated by Server", {
@@ -571,7 +570,6 @@ export const makeSocket = (config: SocketConfig) => {
       }),
     ),
   );
-  // QR gen
   ws.on("CB:iq,type:set,pair-device", async (stanza: BinaryNode) => {
     const iq: BinaryNode = {
       tag: "iq",
@@ -589,7 +587,7 @@ export const makeSocket = (config: SocketConfig) => {
     const identityKeyB64 = Buffer.from(creds.signedIdentityKey.public).toString("base64");
     const advB64 = creds.advSecretKey;
 
-    let qrMs = qrTimeout || 60_000; // time to let a QR live
+    let qrMs = qrTimeout || 60_000;
     const genPairQR = () => {
       if (!ws.isOpen) {
         return;
@@ -597,7 +595,11 @@ export const makeSocket = (config: SocketConfig) => {
 
       const refNode = refNodes.shift();
       if (!refNode) {
-        end(new Boom("QR refs attempts ended", { statusCode: DisconnectReason.timedOut }));
+        end(
+          new Boom("QR refs attempts ended", {
+            statusCode: DisconnectReason.timedOut,
+          }),
+        );
         return;
       }
 
@@ -607,13 +609,11 @@ export const makeSocket = (config: SocketConfig) => {
       ev.emit("connection.update", { qr });
 
       qrTimer = setTimeout(genPairQR, qrMs);
-      qrMs = qrTimeout || 20_000; // shorter subsequent qrs
+      qrMs = qrTimeout || 20_000;
     };
 
     genPairQR();
   });
-  // device paired for the first time
-  // if device pairs successfully, the server asks to restart the connection
   ws.on("CB:iq,,pair-success", async (stanza: BinaryNode) => {
     logger.debug("pair success recv");
     try {
@@ -633,15 +633,16 @@ export const makeSocket = (config: SocketConfig) => {
       end(error);
     }
   });
-  // login complete
+
   ws.on("CB:success", async (node: BinaryNode) => {
-    await uploadPreKeysToServerIfRequired();
-    await sendPassiveIq("active");
+    await Promise.all([uploadPreKeysToServerIfRequired(), sendPassiveIq("active")]);
 
     logger.info("opened connection to WA");
-    clearTimeout(qrTimer); // will never happen in all likelyhood -- but just in case WA sends success on first try
+    clearTimeout(qrTimer);
 
-    ev.emit("creds.update", { me: { ...authState.creds.me!, lid: node.attrs.lid } });
+    ev.emit("creds.update", {
+      me: { ...authState.creds.me!, lid: node.attrs.lid },
+    });
 
     ev.emit("connection.update", { connection: "open" });
   });
@@ -653,7 +654,6 @@ export const makeSocket = (config: SocketConfig) => {
 
     end(new Boom(`Stream Errored (${reason})`, { statusCode, data: node }));
   });
-  // stream fail, possible logout
   ws.on("CB:failure", (node: BinaryNode) => {
     const reason = +(node.attrs.reason || 500);
     end(new Boom("Connection Failure", { statusCode: reason, data: node.attrs }));
@@ -688,8 +688,6 @@ export const makeSocket = (config: SocketConfig) => {
   let didStartBuffer = false;
   process.nextTick(() => {
     if (creds.me?.id) {
-      // start buffering important events
-      // if we're logged in
       ev.buffer();
       didStartBuffer = true;
     }
@@ -701,7 +699,6 @@ export const makeSocket = (config: SocketConfig) => {
     });
   });
 
-  // called when all offline notifs are handled
   ws.on("CB:ib,,offline", (node: BinaryNode) => {
     const child = getBinaryNodeChild(node, "offline");
     const offlineNotifs = +(child?.attrs.count || 0);
@@ -715,10 +712,8 @@ export const makeSocket = (config: SocketConfig) => {
     ev.emit("connection.update", { receivedPendingNotifications: true });
   });
 
-  // update credentials when required
   ev.on("creds.update", (update) => {
     const name = update.me?.name;
-    // if name has just been received
     if (creds.me?.name !== name) {
       logger.debug({ name }, "updated pushName");
       sendNode({
@@ -753,16 +748,11 @@ export const makeSocket = (config: SocketConfig) => {
     uploadPreKeys,
     uploadPreKeysToServerIfRequired,
     requestPairingCode,
-    /** Waits for the connection to WA to reach a state */
     waitForConnectionUpdate: bindWaitForConnectionUpdate(ev),
     sendWAMBuffer,
   };
 };
 
-/**
- * map the websocket error to the right type
- * so it can be retried by the caller
- * */
 function mapWebSocketError(handler: (err: Error) => void) {
   return (error: Error) => {
     handler(
