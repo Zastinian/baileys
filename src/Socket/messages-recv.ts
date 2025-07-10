@@ -406,7 +406,7 @@ export const makeMessagesRecvSocket = (config: SocketConfig) => {
     switch (nodeType) {
       case "privacy_token":
         const tokenList = getBinaryNodeChildren(child, "token");
-        const tokenUpdates = [];
+        const tokenUpdates: any[] = [];
         for (const { attrs, content } of tokenList) {
           tokenUpdates.push({
             id: attrs.jid,

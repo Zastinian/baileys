@@ -45,10 +45,6 @@ export type SocketConfig = {
     browser: WABrowserDescription;
     /** agent used for fetch requests -- uploading/downloading media */
     fetchAgent?: Agent;
-    /** should the QR be printed in the terminal
-     * @deprecated This feature has been removed
-     */
-    printQRInTerminal?: boolean;
     /** should events be emitted for actions done by this socket connection */
     emitOwnEvents: boolean;
     /** custom upload hosts to upload media to */

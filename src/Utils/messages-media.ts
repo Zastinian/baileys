@@ -40,14 +40,7 @@ const execAsync = promisify(exec);
 const getTmpFilesDirectory = () => tmpdir();
 
 const getImageProcessingLibrary = async () => {
-  const [jimp, sharp] = await Promise.all([
-    import("jimp").catch(() => {}),
-    import("sharp").catch(() => {}),
-  ]);
-
-  if (sharp) {
-    return { sharp };
-  }
+  const [jimp] = await Promise.all([import("jimp").catch(() => {})]);
 
   if (jimp) {
     return { jimp };
@@ -155,19 +148,7 @@ export const extractImageThumb = async (
   }
 
   const lib = await getImageProcessingLibrary();
-  if ("sharp" in lib && typeof lib.sharp?.default === "function") {
-    const img = lib.sharp.default(bufferOrFilePath);
-    const dimensions = await img.metadata();
-
-    const buffer = await img.resize(width).jpeg({ quality: 50 }).toBuffer();
-    return {
-      buffer,
-      original: {
-        width: dimensions.width,
-        height: dimensions.height,
-      },
-    };
-  } else if ("jimp" in lib && typeof lib.jimp?.Jimp === "object") {
+  if ("jimp" in lib && typeof lib.jimp?.Jimp === "object") {
     const jimp = await lib.jimp.default.Jimp.read(bufferOrFilePath);
     const dimensions = {
       width: jimp.width,
@@ -207,15 +188,7 @@ export const generateProfilePicture = async (
 
   const lib = await getImageProcessingLibrary();
   let img: Promise<Buffer>;
-  if ("sharp" in lib && typeof lib.sharp?.default === "function") {
-    img = lib.sharp
-      .default(buffer)
-      .resize(w, h)
-      .jpeg({
-        quality: 50,
-      })
-      .toBuffer();
-  } else if ("jimp" in lib && typeof lib.jimp?.Jimp === "object") {
+  if ("jimp" in lib && typeof lib.jimp?.Jimp === "object") {
     const jimp = await lib.jimp.default.Jimp.read(buffer);
     const min = Math.min(jimp.width, jimp.height);
     const cropped = jimp.crop({ x: 0, y: 0, w: min, h: min });

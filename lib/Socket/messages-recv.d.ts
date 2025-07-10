@@ -1,8 +1,8 @@
-import { Boom } from '@hapi/boom';
-import Long = require('long');
-import { proto } from '../../WAProto';
-import { MessageReceiptType, MessageRelayOptions, SocketConfig, WAMessageKey } from '../Types';
-import { BinaryNode } from '../WABinary';
+import { Boom } from "@hapi/boom";
+import Long = require("long");
+import { proto } from "../../WAProto";
+import { MessageReceiptType, MessageRelayOptions, SocketConfig, WAMessageKey } from "../Types";
+import { BinaryNode } from "../WABinary";
 export declare const makeMessagesRecvSocket: (config: SocketConfig) => {
     sendMessageAck: ({ tag, attrs, content }: BinaryNode, errorCode?: number) => Promise<void>;
     sendRetryRequest: (node: BinaryNode, forceIncludeKeys?: boolean) => Promise<void>;
@@ -11,7 +11,7 @@ export declare const makeMessagesRecvSocket: (config: SocketConfig) => {
     requestPlaceholderResend: (messageKey: WAMessageKey) => Promise<string | undefined>;
     getPrivacyTokens: (jids: string[]) => Promise<any>;
     assertSessions: (jids: string[], force: boolean) => Promise<boolean>;
-    relayMessage: (jid: string, message: proto.IMessage, { messageId: msgId, participant, additionalAttributes, additionalNodes, useUserDevicesCache, useCachedGroupMetadata, statusJidList }: MessageRelayOptions) => Promise<string>;
+    relayMessage: (jid: string, message: proto.IMessage, { messageId: msgId, participant, additionalAttributes, additionalNodes, useUserDevicesCache, useCachedGroupMetadata, statusJidList, }: MessageRelayOptions) => Promise<string>;
     sendReceipt: (jid: string, participant: string | undefined, messageIds: string[], type: MessageReceiptType) => Promise<void>;
     sendReceipts: (keys: WAMessageKey[], type: MessageReceiptType) => Promise<void>;
     readMessages: (keys: WAMessageKey[]) => Promise<void>;
